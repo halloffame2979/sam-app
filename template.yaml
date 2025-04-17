@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app
+
+  Sample SAM Template for sam-app
+
+Parameters:
+  # This is a sample parameter. You can add more parameters to customize your application.
+  # For more information, see: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-parameter-passing.html
+  SalesforceBaseUrl:
+    Type: String
+    Default: "https://orgfarm-3d0a995ee8-dev-ed.develop.my.salesforce.com"
+    Description: "Base URL for the Salesforce API"
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    Environment: # Adding global environment variables
+      Variables:
+        SalesforceBaseUrl: !Ref SalesforceBaseUrl # Reference the parameter defined above
+
+Resources:
+  ExpressApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      BinaryMediaTypes: ['*/*']
+      Cors:
+        AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: 3000
+
+  LambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: MyLayer
+      Description: My Lambda Layer
+      ContentUri: lambda_layer/nodejs # Path to the layer content
+      CompatibleRuntimes:
+        - nodejs22.x # Specify the compatible runtimes for the layer
+    Metadata:
+      BuildMethod: nodejs22.x
+      BuildArchitecture: x86_64
+      
+  SalesforceSObjectApi:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/
+      Handler: index.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref LambdaLayer # Reference the layer defined above
+      Events:
+        ProxyApiRoot:
+          Type: Api 
+          Properties:
+            RestApiId: !Ref ExpressApi
+            Path: /
+            Method: ANY
+        ProxyApiGreedy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ExpressApi
+            Path: /{proxy+}
+            Method: ANY
+
+# Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  # HelloWorldApi:
+  #   Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+  #   Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  # HelloWorldFunction:
+  #   Description: "Hello World Lambda Function ARN"
+  #   Value: !GetAtt HelloWorldFunction.Arn
+  # HelloWorldFunctionIamRole:
+  #   Description: "Implicit IAM Role created for Hello World function"
+  #   Value: !GetAtt HelloWorldFunctionRole.Arn

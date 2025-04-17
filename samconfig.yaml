@@ -1,0 +1,34 @@
+version: 0.1
+default:
+  global:
+    parameters:
+      stack_name: sam-app
+      parameter_overrides:
+        - SalesforceBaseUrl='https://orgfarm-3d0a995ee8-dev-ed.develop.my.salesforce.com'
+
+  build:
+    parameters:
+      cached: true
+      parallel: true
+  validate:
+    parameters:
+      lint: true
+  deploy:
+    parameters:
+      capabilities: CAPABILITY_IAM
+      confirm_changeset: true
+      resolve_s3: true
+  package:
+    parameters:
+      resolve_s3: true
+  sync:
+    parameters:
+      watch: true
+  local_start_api:
+    parameters:
+      warm_containers: EAGER
+  local_invoke:
+    parameters:
+      warm_containers: EAGER
+
+    
