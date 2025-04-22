@@ -16,7 +16,7 @@ Parameters:
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 15
     Environment: # Adding global environment variables
       Variables:
         SalesforceBaseUrl: !Ref SalesforceBaseUrl # Reference the parameter defined above
@@ -28,7 +28,7 @@ Resources:
       StageName: prod
       BinaryMediaTypes: ['*/*']
       Cors:
-        AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
+        AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE,PATCH'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
         MaxAge: 3000
@@ -44,8 +44,8 @@ Resources:
     Metadata:
       BuildMethod: nodejs22.x
       BuildArchitecture: x86_64
-      
-  SalesforceSObjectApi:
+
+  AuthApi:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: src/

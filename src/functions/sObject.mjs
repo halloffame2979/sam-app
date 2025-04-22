@@ -15,7 +15,7 @@ router.use(bodyParser.urlencoded({ extended: true }))
 
 router.get('/', authMiddleware, async (req, res) => {
     const result = await getDescribeGlobal(req, res);
-    return res.status(200).json(result.data);
+    return res.status(result.statusCode).json(result.data);
 });
 
 router.post('/:SObjectApiName', authMiddleware, async (req, res) => {
@@ -49,10 +49,4 @@ router.delete('/:SObjectApiName/:id', authMiddleware, async (req, res) => {
 
 router.use(errorHandler);
 
-app.use('/api', router);
-app.get('/', (req, res) => {
-    res.status(200).json({ message: "Hello World" });
-})
-
-
-export const handler = serverlessExpress({ app })
+export const handler = router;

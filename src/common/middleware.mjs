@@ -1,11 +1,12 @@
 import { isAxiosError } from "axios";
 import { SerializedResponse } from "./serializedClass.mjs";
+import { HTTP_CODE } from "./constant.mjs";
 
 
 export async function authMiddleware(req, res, next) {
     const accessToken = req.headers['authorization'] || req.headers['Authorization'];
     if (!accessToken) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(HTTP_CODE.UNAUTHORIZED).json({ error: 'Unauthorized' });
     }
     req.accessToken = accessToken.replace('Bearer ', '');
     next();
@@ -19,7 +20,7 @@ export function errorHandler(err, req, res, next) {
         }
         if (err.request) {
             console.error('Error:', err.request);
-            return res.status(500).json({ error: 'No response received from server' });
+            return res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).json({ error: 'No response received from server' });
         }
     }
     if (err instanceof SerializedResponse) {
